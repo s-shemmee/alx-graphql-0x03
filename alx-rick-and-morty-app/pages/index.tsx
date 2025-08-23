@@ -2,25 +2,28 @@ import { useQuery } from "@apollo/client"
 import { GET_EPISODES } from "@/graphql/queries"
 import { EpisodeProps } from "@/interfaces"
 import EpisodeCard from "@/components/common/EpisodeCard"
+import ErrorBoundary from '@/components/ErrorBoundary';
+import ErrorProneComponent from '@/components/ErrorProneComponent';
 import { useEffect, useState } from "react"
 
 const Home: React.FC = () => {
-  const [page, setPage] = useState<number>(1)
+  const [page, setPage] = useState<number>(1);
+  const [showError, setShowError] = useState(false);
   const { loading, error, data, refetch } = useQuery(GET_EPISODES, {
     variables: {
       page: page
     }
-  })
+  });
 
   useEffect(() => {
-    refetch()
-  }, [page, refetch])
+    refetch();
+  }, [page, refetch]);
 
-  if (loading) return <h1>Loading...</h1>
-  if (error) return <h1>Error</h1>
+  if (loading) return <h1>Loading...</h1>;
+  if (error) return <h1>Error</h1>;
 
-  const results = data?.episodes.results
-  const info = data?.episodes.info
+  const results = data?.episodes.results;
+  const info = data?.episodes.info;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#A3D5E0] to-[#F4F4F4] text-gray-800">
@@ -32,17 +35,29 @@ const Home: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-grow p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {results && results.map(({ id, name, air_date, episode }: EpisodeProps, key: number) => (
-            <EpisodeCard
-              id={id}
-              name={name}
-              air_date={air_date}
-              episode={episode}
-              key={key}
-            />
-          ))}
-        </div>
+        <button
+          onClick={() => setShowError(true)}
+          className="mb-6 bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 transition"
+        >
+          Trigger ErrorBoundary Test
+        </button>
+        {showError ? (
+          <ErrorBoundary>
+            <ErrorProneComponent />
+          </ErrorBoundary>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {results && results.map(({ id, name, air_date, episode }: EpisodeProps, key: number) => (
+              <EpisodeCard
+                id={id}
+                name={name}
+                air_date={air_date}
+                episode={episode}
+                key={key}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Pagination Buttons */}
         <div className="flex justify-between mt-6">
@@ -64,7 +79,7 @@ const Home: React.FC = () => {
         <p>&copy; 2024 Rick and Morty Fan Page</p>
       </footer>
     </div>
-  )
+  );
 }
 
 export default Home
